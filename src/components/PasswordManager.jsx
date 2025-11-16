@@ -5,9 +5,9 @@ import { encryptPassword, decryptPassword, generatePassword } from '../utils/enc
 export default function PasswordManager({ user, onLogout }) {
   const [passwords, setPasswords] = useState([])
   const [loading, setLoading] = useState(true)
-  const [masterKey, setMasterKey] = useState('')
-  const [masterKeySet, setMasterKeySet] = useState(false)
-  const [showMasterKeyForm, setShowMasterKeyForm] = useState(true)
+  
+  // Get master key from environment variable
+  const masterKey = import.meta.env.VITE_MASTER_KEY || 'default-encryption-key-please-change'
   
   // Form state
   const [title, setTitle] = useState('')
@@ -24,23 +24,8 @@ export default function PasswordManager({ user, onLogout }) {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    if (masterKeySet) {
-      fetchPasswords()
-    }
-  }, [masterKeySet])
-
-  const handleSetMasterKey = (e) => {
-    e.preventDefault()
-    if (masterKey.length < 6) {
-      setError('Master key must be at least 6 characters')
-      return
-    }
-    setMasterKeySet(true)
-    setShowMasterKeyForm(false)
-    setError('')
-    setSuccess('Master key set! Your passwords will be encrypted with this key.')
-    setTimeout(() => setSuccess(''), 3000)
-  }
+    fetchPasswords()
+  }, [])
 
   const fetchPasswords = async () => {
     try {
@@ -159,42 +144,6 @@ export default function PasswordManager({ user, onLogout }) {
     navigator.clipboard.writeText(text)
     setSuccess(`${type} copied to clipboard!`)
     setTimeout(() => setSuccess(''), 2000)
-  }
-
-  if (showMasterKeyForm) {
-    return (
-      <div className="container">
-        <div className="auth-container">
-          <h1>🔐 Set Master Key</h1>
-          <p className="subtitle">
-            Create a master key to encrypt your passwords. Remember this key - you'll need it to decrypt your passwords!
-          </p>
-          
-          {error && <div className="error">{error}</div>}
-          
-          <form onSubmit={handleSetMasterKey}>
-            <div className="form-group">
-              <label htmlFor="masterKey">Master Key</label>
-              <input
-                id="masterKey"
-                type="password"
-                placeholder="Enter a strong master key"
-                value={masterKey}
-                onChange={(e) => setMasterKey(e.target.value)}
-                required
-                minLength={6}
-              />
-              <small style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>
-                This key will be used to encrypt/decrypt your passwords locally.
-              </small>
-            </div>
-            <button type="submit" className="btn-primary">
-              Continue
-            </button>
-          </form>
-        </div>
-      </div>
-    )
   }
 
   return (

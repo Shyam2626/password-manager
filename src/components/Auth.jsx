@@ -27,11 +27,18 @@ export default function Auth({ onAuthSuccess }) {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          }
         })
         if (error) throw error
         
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           setError('This email is already registered. Please login instead.')
+        } else if (data.session) {
+          // Auto-login if email confirmation is disabled
+          setSuccess('Account created successfully!')
+          onAuthSuccess(data.user)
         } else {
           setSuccess('Account created! Please check your email to verify your account, then login.')
           setIsLogin(true)
